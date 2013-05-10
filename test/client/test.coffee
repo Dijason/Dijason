@@ -59,6 +59,7 @@ Template.newEle.events
   'click .delete-btn': (e) ->
     $(e.target.parentNode.parentNode).remove()
     HELPERS.updateReasonNum()
+    false
 Template.addNewEle.events 
   'click .add-btn': (e) ->
     newItem = Meteor.render Template.newEle
