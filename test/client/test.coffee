@@ -1,37 +1,69 @@
 Session.set 'reasonNums', 1
 
-Template.addNewEle.reasonNums = ->
-  if Session.get('reasonNums') >= 1 then [1..Session.get('reasonNums')] else 0
-
-Template.newEle.created = ->
-  Template.newEle.num = this.data
+Template.newEle.rendered = ->
+  HELPERS.updateReasonNum()
 
 HELPERS = 
-  saveVal: (e, todel) ->
-    todel = parseInt(todel)-1
-    store = []
-    for i in [0..Session.get('reasonNums')]
-      if i != todel
-        tmpv = $($('input[name="reason"]').get(i)).val()
-        if tmpv then store.push tmpv 
-    setTimeout ->
-      for v,i in store
-        $($('input[name="reason"]').get(i)).val(v)
-    ,20
   sendDataByAjax: (url, dataToSend) ->
     Meteor.http.post url,{data: dataToSend},(err, res)->
       if err then console.log err.reason else $('.show-res:first').text(res.content)
+  updateReasonNum: ->
+    $('.reason-num').each (i)->
+      $(this).text(i+1)
+  init: ->
+    window.onload = ->
+      Meteor.call 'query',(err, res)->
+        if err then console.log err.reason else HELPERS.recover res
+  recover: (res)->
+    for i in [1...res.length]
+      newItem = Meteor.render Template.newEle      
+      $('.add-ele-example .items').append newItem
+    $('.items input[name="reason"]').each (i)->
+      $(this).val(res[i])
+    HELPERS.updateReasonNum()
+###
+    window.onbeforeunload = ->
+      res = []
+      $('input[name="reason"]').each (i)->
+        res.push $(this).val()
+      HELPERS.setCookie 'reason',res.join(" ") , 1
+      "Warning"
+    window.onunload = ->
+      false
+  setCookie: (cname, val, expire)->
+    exdate = new Date()
+    exdate.setTime exdate.getTime()+expire*1000*3600*24
+    expire = if expire then ";expires="+exdate.toGMTString() else ""
+    document.cookie = cname + "=" + escape(val) + expire
+  getCookie: (cname) ->
+    if document.cookie.length > 0 
+      cstart = document.cookie.indexOf(cname + "=")
+      if cstart != -1
+        cstart = cstart + cname.length + 1
+        cend = document.cookie.indexOf ";", cstart
+        if cend == -1 then cend = document.cookie.length
+        return unescape document.cookie.substring(cstart, cend)
+    ""
+  deleteCookie: (cname) ->
+    if document.cookie < 1
+      return 
+    HELPERS.setCookie cname, "",1
+window.onload = ->
+  res = HELPERS.getCookie 'reason'
+  if res then HELPERS.recover res.split(' ')
+  HELPERS.deleteCookie 'reason'
+###
 
+HELPERS.init()        
 Template.newEle.events 
   'click .delete-btn': (e) ->
-    todel = $('.reason-num:first',e.target.parentNode.parentNode).text()
-    HELPERS.saveVal e, todel
-    Session.set 'reasonNums', Session.get('reasonNums')-1
-
+    $(e.target.parentNode.parentNode).remove()
+    HELPERS.updateReasonNum()
 Template.addNewEle.events 
   'click .add-btn': (e) ->
-    HELPERS.saveVal e, 0
-    Session.set 'reasonNums', Session.get('reasonNums')+1
+    newItem = Meteor.render Template.newEle
+    $('.add-ele-example .items').append newItem
+    HELPERS.updateReasonNum()
   'click .submit': (e) ->
     e.preventDefault()
     vals = []
@@ -40,5 +72,3 @@ Template.addNewEle.events
     Meteor.call 'insertReasons', vals, (err)->
       if err then console.log err.reason else console.log 'success'
     false
-  
-    

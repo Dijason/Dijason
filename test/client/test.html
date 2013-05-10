@@ -18,9 +18,9 @@
     <label class="control-label add-item">add item</label>
     <button type="button" class="add-btn btn btn-primary">+</button>
   </div>
-    {{#each reasonNums}}
+  <div class="items">
     {{> newEle}}
-    {{/each}}
+  </div>
     <button type="submit" class="btn submit">submit</button>
   </form>
 </div>
@@ -28,10 +28,11 @@
 
 <template name="newEle">
 <div class="new-element control-group">
-  <label class="control-label">原因<span class="reason-num">{{num}}</span></label>
+  <label class="control-label">原因<span class="reason-num"></span></label>
   <div class="controls">
     <input type="text" name="reason" placeholder="原因" />
     <button type="button" class="delete-btn btn-primary">-</button>
   </div>
 </div>
 </template>
+
