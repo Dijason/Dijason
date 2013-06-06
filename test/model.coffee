@@ -1,6 +1,4 @@
 @Reasons = new Meteor.Collection 'reasons'
-aaaaaaaaaaaaaaaaaaaaa
-aaaaaaaaaaaaaa
 
 
 ###
